@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Millionaire YT UC Store</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:linear-gradient(135deg,#0c0c0c 0%,#1a0033 100%); color:#fff; overflow-x:hidden; }
+    .container { max-width:420px; margin:0 auto; padding:18px; min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { text-align:center; margin-bottom:24px; }
+    .logo { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; background:linear-gradient(45deg,#ffd700,#ff6b35,#ffd700); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:8px; }
+    .tagline { color:#aaa; font-size:13px; font-weight:300; }
+
+    .progress-container { display:flex; justify-content:space-between; margin-bottom:22px; position:relative; }
+    .progress-step { width:30px; height:30px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; position:relative; z-index:2; transition:all 0.3s ease; }
+    .progress-step.active { background:linear-gradient(45deg,#ffd700,#ff6b35); box-shadow:0 0 16px rgba(255,215,0,0.45); }
+    .progress-step.completed { background:#00ff88; color:#000; }
+    .progress-line { height:2px; background:#333; position:absolute; top:14px; width:calc(33.33% - 15px); z-index:1; transition:background 0.3s ease; }
+    .progress-line.active { background:linear-gradient(90deg,#ffd700,#ff6b35); }
+
+    .step { display:none; animation:slideIn 0.35s ease; }
+    .step.active { display:block; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+
+    .step-content { background:rgba(255,255,255,0.06); backdrop-filter:blur(16px); border-radius:18px; padding:26px 18px; border:1px solid rgba(255,255,255,0.10); box-shadow:0 18px 34px rgba(0,0,0,0.35); }
+    .step-title { font-family:'Orbitron',monospace; font-size:22px; font-weight:800; text-align:center; margin-bottom:18px; background:linear-gradient(45deg,#ffd700,#ff6b35); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+    .packs-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+    .pack-card { background:rgba(255,255,255,0.10); border-radius:14px; padding:16px; text-align:center; cursor:pointer; transition:all 0.25s ease; border:2px solid transparent; }
+    .pack-card:hover { transform:translateY(-4px); border-color:#ffd700; box-shadow:0 12px 22px rgba(255,215,0,0.22); }
+    .pack-card.selected { border-color:#ffd700 !important; background:linear-gradient(135deg,rgba(255,215,0,0.18),rgba(255,107,53,0.18)); transform:translateY(-4px) !important; box-shadow:0 12px 22px rgba(255,215,0,0.30) !important; }
+    .pack-uc { font-family:'Orbitron',monospace; font-size:20px; font-weight:900; color:#00ff88; margin-bottom:4px; }
+    .pack-price { font-size:16px; font-weight:800; color:#ffd700; }
+
+    .form-group { margin-bottom:16px; }
+    .form-label { display:block; font-weight:650; margin-bottom:8px; color:#ddd; }
+    .form-input { width:100%; padding:14px; background:rgba(255,255,255,0.10); border:2px solid rgba(255,255,255,0.18); border-radius:12px; color:#fff; font-size:16px; transition:all 0.25s ease; }
+    .form-input:focus { outline:none; border-color:#ffd700; box-shadow:0 0 16px rgba(255,215,0,0.25); background:rgba(255,255,255,0.14); }
+    .form-input::placeholder { color:#aaa; }
+
+    .payment-section { text-align:center; }
+    .upi-qr { width:180px; height:180px; margin:16px auto; border-radius:14px; box-shadow:0 10px 22px rgba(0,0,0,0.55); display:none; }
+    .upi-id { font-family:monospace; font-size:16px; font-weight:800; color:#ffd700; word-break:break-all; background:rgba(0,0,0,0.45); padding:10px; border-radius:10px; margin:10px 0; display:none; }
+
+    .file-upload-area { border:3px dashed #ffd700; border-radius:14px; padding:34px 16px; text-align:center; transition:all 0.25s ease; cursor:pointer; background:rgba(255,215,0,0.08); margin:16px 0; }
+    .file-upload-area:hover { background:rgba(255,215,0,0.14); }
+    .file-upload-area.dragover { border-color:#00ff88; background:rgba(0,255,136,0.16); }
+    #screenshotPreview { max-width:100%; max-height:200px; border-radius:10px; margin-top:12px; display:none; }
+
+    .btn { padding:14px 18px; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.25s ease; width:100%; margin-bottom:10px; }
+    .btn-primary { background:linear-gradient(45deg,#ffd700,#ff6b35); color:#000; box-shadow:0 10px 22px rgba(255,215,0,0.30); }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 14px 26px rgba(255,215,0,0.40); }
+    .btn-secondary { background:rgba(255,255,255,0.10); color:#fff; border:2px solid rgba(255,255,255,0.25); }
+    .btn-secondary:hover { background:rgba(255,255,255,0.16); border-color:#ffd700; }
+    .btn:disabled { opacity:0.55; cursor:not-allowed; transform:none !important; }
+
+    .success-screen { text-align:center; padding:54px 16px; }
+    .success-icon { font-size:78px; color:#00ff88; margin-bottom:18px; }
+    .success-title { font-size:24px; font-weight:800; margin-bottom:10px; color:#00ff88; }
+    .delivery-msg { color:#ffd700; font-size:15px; margin:16px 0; font-weight:700; }
+
+    @media (max-width:480px) { .container { padding:14px; } .logo { font-size:24px; } }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="logo">Millionaire YT UC</h1>
+      <p class="tagline">Trusted UC Provider • 5–10 Min Delivery</p>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-line" id="line1"></div>
+      <div class="progress-step active">1</div>
+      <div class="progress-line" id="line2"></div>
+      <div class="progress-step">2</div>
+      <div class="progress-line" id="line3"></div>
+      <div class="progress-step">3</div>
+      <div class="progress-line" id="line4"></div>
+      <div class="progress-step">4</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="step1" class="step active">
+      <div class="step-content">
+        <h2 class="step-title">Select UC Pack</h2>
+
+        <div class="packs-grid" id="packsGrid">
+          <div class="pack-card" data-uc="60" data-price="40"><div class="pack-uc">60 UC</div><div class="pack-price">₹40</div></div>
+          <div class="pack-card" data-uc="1900" data-price="950"><div class="pack-uc">1900 UC</div><div class="pack-price">₹950</div></div>
+          <div class="pack-card" data-uc="3850" data-price="1540"><div class="pack-uc">3850 UC</div><div class="pack-price">₹1540</div></div>
+          <div class="pack-card" data-uc="8100" data-price="2430"><div class="pack-uc">8100 UC</div><div class="pack-price">₹2430</div></div>
+          <div class="pack-card" data-uc="16200" data-price="4100"><div class="pack-uc">16200 UC</div><div class="pack-price">₹4100</div></div>
+          <div class="pack-card" data-uc="32400" data-price="7800"><div class="pack-uc">32400 UC</div><div class="pack-price">₹7800</div></div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="next1" disabled>Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" class="step">
+      <div class="step-content">
+        <h2 class="step-title">Enter Details</h2>
+
+        <div class="form-group">
+          <label class="form-label">Selected: <span id="selectedPackDisplay">-</span></label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">BGMI UID (10 digits)</label>
+          <input type="tel" class="form-input" id="uid" placeholder="1234567890" maxlength="10" inputmode="numeric">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">In-Game Name (IGN)</label>
+          <input type="text" class="form-input" id="ign" placeholder="ProGamer">
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="back2">← Back</button>
+        <button type="button" class="btn btn-primary" id="next2" disabled>Continue to Payment →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" class="step">
+      <div class="step-content">
+        <h2 class="step-title">Complete Payment</h2>
+
+        <div class="payment-section">
+          <img src="upi-qr.jpg" alt="UPI QR" class="upi-qr" id="upiQr">
+          <div class="upi-id" id="upiId">adiptl@ptyes</div>
+
+          <p style="color:#ffd700; font-size:15px; margin:16px 0;">
+            Pay <strong id="paymentAmount">₹0</strong> via UPI
+          </p>
+
+          <p style="color:#00ff88; font-size:13px; font-weight:700;">
+            Orders will be sent to: thebasicgamermlbb@gmail.com
+          </p>
+        </div>
+
+        <div class="file-upload-area" id="uploadArea">
+          <i class="fas fa-cloud-upload-alt" style="font-size:46px; color:#ffd700; margin-bottom:12px;"></i>
+          <p>Upload Payment Screenshot</p>
+          <p style="color:#aaa; font-size:13px;">PNG/JPG (Max 5MB)</p>
+
+          <input type="file" id="screenshot" accept="image/*" style="display:none;">
+          <img id="screenshotPreview" alt="Preview">
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="back3">← Back</button>
+
+        <!-- Hidden until screenshot uploaded -->
+        <button type="button" class="btn btn-primary" id="submitBtn" disabled style="display:none;">
+          Confirm Payment
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step4" class="step">
+      <div class="step-content success-screen">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <h2 class="success-title">Your UC order has been placed!</h2>
+        <p class="delivery-msg">UC will be delivered in 5–10 minutes.</p>
+        <p style="color:#ddd; font-size:15px;">Order details have been sent successfully.</p>
+        <button type="button" class="btn btn-primary" onclick="location.reload()">New Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden submit to Apps Script (no fetch/CORS issues) -->
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
+  <form id="orderForm" method="POST" target="hidden_iframe" style="display:none;">
+    <input name="secret" id="f_secret">
+    <input name="order_id" id="f_order_id">
+    <input name="uc" id="f_uc">
+    <input name="price" id="f_price">
+    <input name="uid" id="f_uid">
+    <input name="ign" id="f_ign">
+  </form>
+
+  <script>
+    /************ SETTINGS (DON'T CHANGE OTHER CODE) ************/
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_6oZEdaHMvCHuLg3FVB2NzlOFJRXjcX2MdSfgVprVBaBH28o9M7YeFagaPRumTPV5Zw/exec";
+    const SECRET = "UCSTORE_2025_9fK3rQ7pV2mN8xT4aL6zH1cD5eJ0wS";
+    /************************************************************/
+
+    // State
+    let currentStep = 1;
+    let selectedPack = null;
+    let screenshotFile = null;
+
+    // Helpers
+    function $(id) { return document.getElementById(id); }
+
+    function safeShowStep(step) {
+      const el = $(`step${step}`);
+      if (!el) {
+        alert(`❌ Missing step container: step${step}`);
+        return;
+      }
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      currentStep = step;
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateProgress() {
+      const steps = document.querySelectorAll('.progress-step');
+      const lines = document.querySelectorAll('.progress-line');
+
+      steps.forEach((stepEl, index) => {
+        stepEl.classList.toggle('completed', index < currentStep - 1);
+        stepEl.classList.toggle('active', index === currentStep - 1);
+      });
+      lines.forEach((lineEl, index) => {
+        lineEl.classList.toggle('active', index < currentStep - 1);
+      });
+    }
+
+    // STEP 1: Pack selection
+    document.querySelectorAll('.pack-card').forEach(card => {
+      card.addEventListener('click', function () {
+        document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedPack = { uc: this.dataset.uc, price: this.dataset.price };
+        $('next1').disabled = false;
+      });
+    });
+
+    $('next1').onclick = function () {
+      if (!selectedPack) return alert("❌ Please select a UC pack");
+      $('selectedPackDisplay').textContent = `${selectedPack.uc} UC - ₹${selectedPack.price}`;
+      safeShowStep(2);
+    };
+
+    // STEP 2 validation
+    $('uid').addEventListener('input', validateStep2);
+    $('ign').addEventListener('input', validateStep2);
+
+    function validateStep2() {
+      const uid = $('uid').value.trim();
+      const ign = $('ign').value.trim();
+      $('next2').disabled = !(/^d{10}$/.test(uid) && ign.length > 0);
+    }
+
+    // FIXED: Continue to Payment (with defensive checks)
+    $('next2').onclick = function () {
+      try {
+        if (!selectedPack) return alert("❌ Pack not selected");
+        const paymentAmountEl = $('paymentAmount');
+        const upiQrEl = $('upiQr');
+        const upiIdEl = $('upiId');
+
+        if (!paymentAmountEl || !upiQrEl || !upiIdEl) {
+          return alert("❌ Missing IDs in Step 3: paymentAmount / upiQr / upiId");
+        }
+
+        paymentAmountEl.textContent = `₹${selectedPack.price}`;
+        upiQrEl.style.display = 'block';
+        upiIdEl.style.display = 'block';
+
+        safeShowStep(3);
+      } catch (e) {
+        alert("❌ Error: " + (e && e.message ? e.message : e));
+      }
+    };
+
+    $('back2').onclick = () => safeShowStep(1);
+    $('back3').onclick = () => safeShowStep(2);
+
+    // STEP 3: screenshot upload preview + show confirm button
+    const uploadArea = $('uploadArea');
+    const fileInput = $('screenshot');
+    const preview = $('screenshotPreview');
+    const submitBtn = $('submitBtn');
+
+    uploadArea.onclick = () => fileInput.click();
+    fileInput.onchange = handleFile;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      uploadArea.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+    });
+    uploadArea.addEventListener('dragover', () => uploadArea.classList.add('dragover'), false);
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'), false);
+    uploadArea.addEventListener('drop', () => uploadArea.classList.remove('dragover'), false);
+
+    uploadArea.ondrop = (e) => {
+      fileInput.files = e.dataTransfer.files;
+      handleFile({ target: fileInput });
+    };
+
+    function handleFile(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file && file.type.startsWith('image/') && file.size < 5 * 1024 * 1024) {
+        screenshotFile = file;
+
+        // Preview using FileReader.readAsDataURL [web:171]
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          preview.src = ev.target.result;
+          preview.style.display = 'block';
+
+          submitBtn.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirm Payment';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        screenshotFile = null;
+        preview.style.display = 'none';
+        submitBtn.style.display = 'none';
+        submitBtn.disabled = true;
+        alert('❌ Please upload a valid image (PNG/JPG) under 5MB');
+      }
+    }
+
+    // Confirm Payment -> submit to Apps Script
+    const form = $('orderForm');
+    form.action = SCRIPT_URL;
+
+    submitBtn.onclick = function () {
+      if (!selectedPack) return alert("❌ Please select UC pack");
+      const uid = $('uid').value.trim();
+      const ign = $('ign').value.trim();
+
+      if (!/^d{10}$/.test(uid)) return alert("❌ BGMI UID must be exactly 10 digits");
+      if (!ign) return alert("❌ IGN is required");
+      if (!screenshotFile) return alert("❌ Please upload payment screenshot");
+
+      const orderId = String(Date.now());
+
+      $('f_secret').value = SECRET;
+      $('f_order_id').value = orderId;
+      $('f_uc').value = selectedPack.uc;
+      $('f_price').value = selectedPack.price;
+      $('f_uid').value = uid;
+      $('f_ign').value = ign;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      form.submit();
+      setTimeout(() => safeShowStep(4), 800);
+    };
+
+    // init progress state
+    updateProgress();
+  </script>
+</body>
+</html>
